@@ -75,7 +75,7 @@ y=dataFrame['charges']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=23)
 
 # generate the model
-model = LinearRegression()
+model = DataAnalysis()
 model.fit(X_train, y_train) # to train the model
 # evaluate the model: for this purpose we use test dataset
 y_pred = model.predict(X_test) # this is the accuracy of the model with new data
@@ -158,6 +158,14 @@ ax = f.add_subplot(122)
 sns.histplot((y_test - y_pred), ax=ax, color='b')
 ax.axvline((y_test - y_pred).mean(), color='k', linestyle='--')
 ax.set_title('Check the residual normality & mean')
+plt.tight_layout()
+plt.show()
+
+# Plotting the real values and the predicted values on one simple line graph which will show how are original insurance
+# charges and the predicted charges regressed.
+import seaborn as sns
+sns.lineplot(x=X_test['age'], y=y_test, color='red')
+sns.lineplot(x=X_test['age'], y=y_pred, color='blue')
 plt.tight_layout()
 plt.show()
 
