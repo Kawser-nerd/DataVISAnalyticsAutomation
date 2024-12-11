@@ -146,35 +146,43 @@ plt.show()
 The LSTM model trains on the data pattern and then try to predict the future scenario of the data.. for that reason, we should use different new data and should give it as input to the model to see the future values.
 """
 
-demo_data= pd.DataFrame(
+demo_data = pd.DataFrame(
     {
-        'age':[30, 42],
-        'sex':['male', 'female'],
-        'bmi':[25.5, 28.6],
-        'children':[2, 3],
-        'smoker':['no', 'no'],
-        'region':['southeast', 'northwest']
+        'age': [30, 32],
+        'sex': ['male', 'female'],
+        'bmi': [25.5, 28.6],
+        'children': [2, 0],
+        'smoker': ['no', 'no'],
+        'region': ['southeast', 'northwest']
     }
 )
 
+# Encode categorical variables
 for col in categorical_columns:
-  demo_data[col]=label_encoders[col].fit_transform(demo_data[col])
+    demo_data[col] = label_encoders[col].transform(demo_data[col])
 
-# we can add a placeholder for the predicted charges
-demo_data['charges']=0
+# Add a placeholder for 'charges'
+demo_data['charges'] = 0  # Placeholder for consistency with the scaler
 
+# Scale the data
 demo_data_scaled = scaler.transform(demo_data)
 
-# reshaping the new data to 3D format
-demo_data_scaled = demo_data_scaled[:, :-1]
+# Drop 'charges' for LSTM input
+demo_data_lstm_input = demo_data_scaled[:, :-1]  # Exclude the last column ('charges')
 
-demo_data_lstm = np.reshape(demo_data_scaled, (demo_data_scaled.shape[0], 1, demo_data_scaled.shape[1]))
+# Reshape for LSTM
+demo_data_lstm = np.reshape(demo_data_lstm_input, (demo_data_lstm_input.shape[0], 1, demo_data_lstm_input.shape[1]))
+
+# Predict charges
 demo_data_chargePrediction_s = modelLSTM.predict(demo_data_lstm)
-print(demo_data_chargePrediction_s)
+print("Scaled Predictions:", demo_data_chargePrediction_s)
 
-# reformulate the predicted charges
-placeholder_demo = np.zeros_like(demo_data_scaled)
-placeholder_demo[:,-1] = demo_data_chargePrediction_s[:, 0]
+# Reformulate predictions
+placeholder_demo = np.zeros_like(demo_data_scaled)  # Match original scaled data dimensions
+placeholder_demo[:, :-1] = demo_data_scaled[:, :-1]  # Copy all features except 'charges'
+placeholder_demo[:, -1] = demo_data_chargePrediction_s[:, 0]  # Insert predictions into 'charges'
+
+# Inverse transform to get original scale
 demo_data_chargePrediction = scaler.inverse_transform(placeholder_demo)[:, -1]
-print(demo_data_chargePrediction)
+print("Predicted Charges in Original Scale:", demo_data_chargePrediction)
 
